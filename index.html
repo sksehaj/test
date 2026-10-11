@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Winter Arc</title>
+
+    <!-- App Icon for iPhone Home Screen -->
+    <link rel="apple-touch-icon" href="icon.png">
+
+    <!-- iOS Full-Screen & Startup Screen Configuration -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Winter Arc">
+    <meta name="theme-color" content="#09090b">
+
+    <!-- Prevent automatic phone number formatting on set/rep numbers -->
+    <meta name="format-detection" content="telephone=no">
+
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #121214;
+            --card-border: #27272a;
+            --accent-color: #38bdf8;
+            --accent-success: #22c55e;
+            --text-main: #f8fafc;
+            --text-muted: #a1a1aa;
+            --border-color: #3f3f46;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: env(safe-area-inset-top, 16px) 16px calc(150px + env(safe-area-inset-bottom, 0px)) 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .day-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .day-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 10px 4px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .day-btn.active {
+            background-color: var(--accent-color);
+            color: #000;
+            border-color: var(--accent-color);
+        }
+
+        /* Premium Active Exercise View */
+        .premium-workout-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .current-exercise-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .exercise-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .exercise-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .exercise-meta {
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            background-color: rgba(56, 189, 248, 0.12);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* Sets Table Layout for No-Scroll Visibility */
+        .sets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .set-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 1fr 70px;
+            gap: 8px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .set-row.completed {
+            background-color: rgba(34, 197, 94, 0.08);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .set-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .set-input {
+            width: 100%;
+            background-color: #000;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .set-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .set-done-btn {
+            background-color: var(--card-border);
+            color: var(--text-muted);
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .set-done-btn.completed {
+            background-color: var(--accent-success);
+            color: #fff;
+        }
+
+        /* Navigation Buttons between exercises */
+        .exercise-nav-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-ex-btn {
+            flex: 1;
+            background-color: var(--card-border);
+            color: var(--text-main);
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .nav-ex-btn:active {
+            opacity: 0.8;
+        }
+
+        /* Upcoming Exercise Preview Card */
+        .upcoming-card {
+            background-color: rgba(18, 18, 20, 0.6);
+            border: 1px dashed var(--card-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upcoming-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .upcoming-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* Timer Bar at Bottom */
+        .timer-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #09090be6;
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--card-border);
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+
+        .timer-display {
+            font-size: 1.6rem;
+            font-weight: 700;
+            font-family: monospace;
+            color: var(--accent-color);
+            letter-spacing: 1px;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-btn {
+            background-color: var(--card-border);
+            color: var(--text-main);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .action-btn.primary {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Winter Arc</h1>
+    </header>
+
+    <div class="day-selector" id="day-selector">
+        <button class="day-btn active" onclick="switchDay('mon')">Mon</button>
+        <button class="day-btn" onclick="switchDay('tue')">Tue</button>
+        <button class="day-btn" onclick="switchDay('thu')">Thu</button>
+        <button class="day-btn" onclick="switchDay('fri')">Fri</button>
+    </div>
+
+    <!-- Active Premium Workout Screen View -->
+    <div class="premium-workout-container">
+        <div class="current-exercise-card" id="current-exercise-card">
+            <!-- Dynamically populated current exercise view -->
+        </div>
+
+        <div class="upcoming-card" id="upcoming-card">
+            <div>
+                <div class="upcoming-label">Up Next</div>
+                <div class="upcoming-name" id="upcoming-name">--</div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);" id="upcoming-target">--</div>
+        </div>
+    </div>
+
+    <!-- Rest Timer Bar -->
+    <div class="timer-bar">
+        <div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.5px;">REST TIMER</div>
+            <div class="timer-display" id="timer-display">01:00</div>
+        </div>
+        <div class="timer-controls">
+            <button class="action-btn" onclick="addTime(-15)">-15s</button>
+            <button class="action-btn" onclick="addTime(15)">+15s</button>
+            <button class="action-btn primary" id="timer-toggle-btn" onclick="toggleTimer()">Start</button>
+        </div>
+    </div>
+
+    <script>
+        const workoutData = {
+            mon: [
+                { name: "Floor Press", reps: "12", sets: 3 },
+                { name: "Floor Fly", reps: "8-10", sets: 2 },
+                { name: "Dumbbell Pullover", reps: "10", sets: 2 },
+                { name: "Triceps Extension", reps: "8-10", sets: 3 },
+                { name: "Close-Grip Floor Press", reps: "10", sets: 2 }
+            ],
+            tue: [
+                { name: "One-Arm Row", reps: "12/arm", sets: 3 },
+                { name: "Reverse Fly", reps: "8-10", sets: 2 },
+                { name: "Dumbbell Pullover", reps: "10", sets: 2 },
+                { name: "Dumbbell Curl", reps: "8-10", sets: 3 },
+                { name: "Hammer Curl", reps: "8-10", sets: 3 }
+            ],
+            thu: [
+                { name: "Shoulder Press", reps: "6-8", sets: 3 },
+                { name: "Lateral Raise", reps: "8-10", sets: 3 },
+                { name: "Rear-Delt Fly", reps: "8-10", sets: 3 },
+                { name: "Floor Press", reps: "10-12", sets: 3 },
+                { name: "Floor Fly", reps: "8-10", sets: 2 }
+            ],
+            fri: [
+                { name: "One-Arm Row", reps: "12/arm", sets: 3 },
+                { name: "Reverse Fly", reps: "8-10", sets: 2 },
+                { name: "Dumbbell Curl", reps: "8-10", sets: 3 },
+                { name: "Hammer Curl", reps: "8-10", sets: 2 },
+                { name: "Triceps Extension", reps: "8-10", sets: 3 },
+                { name: "Close-Grip Floor Press", reps: "10", sets: 2 },
+                { name: "Wrist Curl", reps: "12-15", sets: 2 },
+                { name: "Reverse Wrist Curl", reps: "10-12", sets: 2 }
+            ]
+        };
+
+        let currentDay = 'mon';
+        let currentExerciseIndex = 0;
+
+        function switchDay(dayKey) {
+            currentDay = dayKey;
+            currentExerciseIndex = 0;
+            
+            document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            renderActiveExercise();
+        }
+
+        function changeExercise(direction) {
+            const exercises = workoutData[currentDay];
+            currentExerciseIndex += direction;
+            if (currentExerciseIndex < 0) currentExerciseIndex = 0;
+            if (currentExerciseIndex >= exercises.length) currentExerciseIndex = exercises.length - 1;
+            renderActiveExercise();
+        }
+
+        function renderActiveExercise() {
+            const exercises = workoutData[currentDay];
+            const ex = exercises[currentExerciseIndex];
+            const card = document.getElementById('current-exercise-card');
+            
+            // Build sets input rows
+            let setsHTML = '';
+            for (let s = 1; s <= ex.sets; s++) {
+                const setId = `${currentDay}-${currentExerciseIndex}-${s}`;
+                const savedData = JSON.parse(localStorage.getItem(setId) || '{"weight":"","reps":"","completed":false}');
+                
+                setsHTML += `
+                    <div class="set-row ${savedData.completed ? 'completed' : ''}" id="row-${setId}">
+                        <div class="set-label">S${s}</div>
+                        <div class="input-group">
+                            <label>Weight</label>
+                            <input type="number" inputmode="decimal" class="set-input" id="w-${setId}" value="${savedData.weight}" placeholder="lbs/kg" oninput="saveSetData('${setId}')">
+                        </div>
+                        <div class="input-group">
+                            <label>Reps</label>
+                            <input type="number" inputmode="numeric" class="set-input" id="r-${setId}" value="${savedData.reps}" placeholder="${ex.reps}" oninput="saveSetData('${setId}')">
+                        </div>
+                        <button class="set-done-btn ${savedData.completed ? 'completed' : ''}" id="btn-${setId}" onclick="toggleSet('${setId}')">
+                            ${savedData.completed ? 'Done' : 'Complete'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="exercise-top-row">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px;">EXERCISE ${currentExerciseIndex + 1} OF ${exercises.length}</div>
+                        <div class="exercise-title">${ex.name}</div>
+                    </div>
+                    <div class="exercise-meta">Target: ${ex.reps} reps</div>
+                </div>
+                <div class="sets-list">${setsHTML}</div>
+                <div class="exercise-nav-row">
+                    <button class="nav-ex-btn" onclick="changeExercise(-1)" ${currentExerciseIndex === 0 ? 'style="opacity:0.4; pointer-events:none;"' : ''}>← Prev Exercise</button>
+                    <button class="nav-ex-btn primary" onclick="changeExercise(1)" ${currentExerciseIndex === exercises.length - 1 ? 'style="opacity:0.4; pointer-events:none;"' : ''}>Next Exercise →</button>
+                </div>
+            `;
+
+            // Update Upcoming Preview
+            const nextEx = exercises[currentExerciseIndex + 1];
+            if (nextEx) {
+                document.getElementById('upcoming-name').innerText = nextEx.name;
+                document.getElementById('upcoming-target').innerText = `${nextEx.sets} sets • ${nextEx.reps} reps`;
+                document.getElementById('upcoming-card').style.display = 'flex';
+            } else {
+                document.getElementById('upcoming-card').style.display = 'none';
+            }
+        }
+
+        function saveSetData(setId) {
+            const weight = document.getElementById(`w-${setId}`).value;
+            const reps = document.getElementById(`r-${setId}`).value;
+            const btn = document.getElementById(`btn-${setId}`);
+            const isCompleted = btn.classList.contains('completed');
+
+            localStorage.setItem(setId, JSON.stringify({ weight, reps, completed: isCompleted }));
+        }
+
+        function toggleSet(setId) {
+            const btn = document.getElementById(`btn-${setId}`);
+            const row = document.getElementById(`row-${setId}`);
+            
+            btn.classList.toggle('completed');
+            row.classList.toggle('completed');
+            
+            const isCompleted = btn.classList.contains('completed');
+            btn.innerText = isCompleted ? 'Done' : 'Complete';
+
+            saveSetData(setId);
+
+            // Auto-trigger rest timer on completion
+            if (isCompleted) {
+                resetTimer(60);
+                startTimer();
+            }
+        }
+
+        // Audio Beep Generator
+        function playBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } catch (e) {
+                console.log("Audio not supported");
+            }
+        }
+
+        // Timer Logic
+        let timerInterval = null;
+        let timeLeft = 60;
+        let isRunning = false;
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timer-display').innerText = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (isRunning) clearInterval(timerInterval);
+            isRunning = true;
+            document.getElementById('timer-toggle-btn').innerText = 'Pause';
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    document.getElementById('timer-toggle-btn').innerText = 'Start';
+                    
+                    if (navigator.vibrate) {
+                        navigator.vibrate([200, 100, 200, 100, 300]);
+                    }
+                    playBeep();
+                }
+            }, 1000);
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                document.getElementById('timer-toggle-btn').innerText = 'Start';
+            } else {
+                startTimer();
+            }
+        }
+
+        function resetTimer(seconds) {
+            clearInterval(timerInterval);
+            isRunning = false;
+            timeLeft = seconds;
+            updateDisplay();
+            document.getElementById('timer-toggle-btn').innerText = 'Start';
+        }
+
+        function addTime(seconds) {
+            timeLeft = Math.max(0, timeLeft + seconds);
+            updateDisplay();
+        }
+
+        // Initialize App
+        renderActiveExercise();
+        updateDisplay();
+    </script>
+</body>
+</html>
